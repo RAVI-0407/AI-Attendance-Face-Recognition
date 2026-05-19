@@ -8,11 +8,9 @@
 - [System Architecture](#-system-architecture)
 - [Tech Stack](#-tech-stack)
 - [Project Structure](#-project-structure)
-- [Getting Started](#-getting-started)
 - [How to Use](#-how-to-use)
 - [Accuracy Results](#-accuracy-results)
 - [Screenshots](#-screenshots)
-- [Author](#-author)
 
 
 ## 🚀 About the Project
