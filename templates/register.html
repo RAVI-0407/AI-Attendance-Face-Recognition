@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Register Student{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Register Student</h1>
+    <p class="sub">Enrol a new student with face recognition data</p>
+  </div>
+  <a href="{{ url_for('students') }}" class="btn btn-outline">← All Students</a>
+</div>
+
+<div class="form-layout">
+  <div class="card">
+    <form method="POST" enctype="multipart/form-data" id="regForm">
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input type="text" name="name" required placeholder="e.g. Ravi Kumar" />
+        </div>
+
+        <div class="form-group">
+          <label>Roll Number *</label>
+          <input type="text" name="roll_number" required
+                 placeholder="e.g. 22AIE001"
+                 style="text-transform:uppercase" />
+        </div>
+
+        <div class="form-group">
+          <label>Department *</label>
+          <select name="department" required>
+            <option value="">Select Department</option>
+            <option value="AIDS">AI &amp; Data Science</option>
+            <option value="CSE">Computer Science &amp; Engineering</option>
+            <option value="ECE">Electronics &amp; Communication</option>
+            <option value="MECH">Mechanical Engineering</option>
+            <option value="CIVIL">Civil Engineering</option>
+            <option value="IT">Information Technology</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Year *</label>
+          <select name="year" required>
+            <option value="">Select Year</option>
+            <option value="I">I Year</option>
+            <option value="II">II Year</option>
+            <option value="III">III Year</option>
+            <option value="IV">IV Year</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Section *</label>
+          <input type="text" name="section" required
+                 placeholder="A" maxlength="2"
+                 style="text-transform:uppercase; max-width:120px" />
+        </div>
+      </div>
+
+      <!-- Photo Upload -->
+      <div class="form-group" style="margin-top:20px">
+        <label>Student Photo *</label>
+        <p class="hint">Upload a clear, frontal face photo. Minimum 200×200 px.</p>
+        <div class="upload-zone" id="uploadZone"
+             onclick="document.getElementById('photoInput').click()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <p>Click to upload photo</p>
+          <p class="hint">JPG, PNG, WEBP — max 16 MB</p>
+          <input type="file" name="photo" id="photoInput"
+                 accept="image/*" required
+                 onchange="previewPhoto(this)" style="display:none" />
+        </div>
+        <img id="photoPreview" class="photo-preview" style="display:none" />
+      </div>
+
+      <div style="margin-top:28px; display:flex; gap:12px">
+        <button type="submit" class="btn btn-primary" id="submitBtn">
+          Register Student
+        </button>
+        <a href="{{ url_for('students') }}" class="btn btn-outline">Cancel</a>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- Tips card -->
+  <div class="tips-card">
+    <h3>📸 Photo Tips</h3>
+    <ul>
+      <li>Face should be clearly visible and centred</li>
+      <li>Good, even lighting — avoid strong shadows</li>
+      <li>Look straight at the camera</li>
+      <li>Remove sunglasses or face coverings</li>
+      <li>Neutral background preferred</li>
+      <li>Use 2–3 photos for better accuracy</li>
+    </ul>
+    <div class="tip-box">
+      <strong>Note:</strong> The system extracts a 128-dimensional face embedding
+      using dlib's ResNet model and stores it securely in the database.
+    </div>
+  </div>
+</div>
+{% endblock %}

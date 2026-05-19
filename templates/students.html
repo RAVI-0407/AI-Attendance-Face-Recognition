@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Students{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Students</h1>
+    <p class="sub">{{ students|length }} student(s) found</p>
+  </div>
+  <a href="{{ url_for('register') }}" class="btn btn-primary">+ Register Student</a>
+</div>
+
+<!-- Filters -->
+<div class="card filter-bar">
+  <form method="GET" style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end">
+    <div class="form-group" style="margin:0">
+      <label>Department</label>
+      <select name="department">
+        <option value="">All</option>
+        <option value="AIDS"  {% if filters.department=='AIDS'  %}selected{% endif %}>AI &amp; DS</option>
+        <option value="CSE"   {% if filters.department=='CSE'   %}selected{% endif %}>CSE</option>
+        <option value="ECE"   {% if filters.department=='ECE'   %}selected{% endif %}>ECE</option>
+        <option value="MECH"  {% if filters.department=='MECH'  %}selected{% endif %}>MECH</option>
+        <option value="CIVIL" {% if filters.department=='CIVIL' %}selected{% endif %}>CIVIL</option>
+        <option value="IT"    {% if filters.department=='IT'    %}selected{% endif %}>IT</option>
+      </select>
+    </div>
+    <div class="form-group" style="margin:0">
+      <label>Year</label>
+      <select name="year">
+        <option value="">All</option>
+        <option value="I"   {% if filters.year=='I'   %}selected{% endif %}>I Year</option>
+        <option value="II"  {% if filters.year=='II'  %}selected{% endif %}>II Year</option>
+        <option value="III" {% if filters.year=='III' %}selected{% endif %}>III Year</option>
+        <option value="IV"  {% if filters.year=='IV'  %}selected{% endif %}>IV Year</option>
+      </select>
+    </div>
+    <div class="form-group" style="margin:0">
+      <label>Section</label>
+      <input type="text" name="section" value="{{ filters.section }}"
+             placeholder="A" style="width:80px; text-transform:uppercase" />
+    </div>
+    <button type="submit" class="btn btn-outline">Filter</button>
+    <a href="{{ url_for('students') }}" class="btn btn-ghost">Clear</a>
+  </form>
+</div>
+
+<!-- Student Grid -->
+{% if students %}
+<div class="student-grid">
+  {% for s in students %}
+  <div class="student-card">
+    <div class="student-photo">
+      {% if s.photo_path %}
+        <img src="{{ url_for('static', filename=s.photo_path) }}"
+             alt="{{ s.name }}" />
+      {% else %}
+        <div class="no-photo">{{ s.name[0] }}</div>
+      {% endif %}
+    </div>
+    <div class="student-info">
+      <h3>{{ s.name }}</h3>
+      <p class="roll">{{ s.roll_number }}</p>
+      <div class="tags">
+        <span class="tag">{{ s.department }}</span>
+        <span class="tag">{{ s.year }} Year</span>
+        <span class="tag">Sec {{ s.section }}</span>
+      </div>
+      <div class="face-status">
+        {% if s.face_encoding %}
+          <span class="dot green"></span> Face Enrolled
+        {% else %}
+          <span class="dot red"></span> No Face Data
+        {% endif %}
+      </div>
+    </div>
+    <form method="POST"
+          action="{{ url_for('delete_student', sid=s.id) }}"
+          onsubmit="return confirm('Delete {{ s.name }}?')"
+          class="delete-form">
+      <button type="submit" class="btn-icon-danger" title="Delete">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14H6L5 6"/>
+          <path d="M10 11v6M14 11v6"/>
+          <path d="M9 6V4h6v2"/>
+        </svg>
+      </button>
+    </form>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card">
+  <div class="empty-state">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+    </svg>
+    <p>No students found. <a href="{{ url_for('register') }}">Register your first student →</a></p>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

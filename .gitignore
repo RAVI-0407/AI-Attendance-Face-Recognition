@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+venv/
+.env
+.env.local
+
+# Database (contains personal/sensitive data)
+instance/
+*.db
+*.sqlite3
+
+# Student photos (privacy)
+static/student_photos/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo

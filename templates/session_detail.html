@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% block title %}{{ session.subject }} — {{ session.date }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>{{ session.subject }}</h1>
+    <p class="sub">{{ session.date }} &nbsp;|&nbsp; {{ session.department }}
+       &nbsp;|&nbsp; {{ session.year }} Year — Section {{ session.section }}</p>
+  </div>
+  <div style="display:flex;gap:10px">
+    <a href="{{ url_for('export_session_csv', session_id=session.id) }}"
+       class="btn btn-outline">
+      ⬇ Export CSV
+    </a>
+    <a href="{{ url_for('reports') }}" class="btn btn-ghost">← Reports</a>
+  </div>
+</div>
+
+<!-- Summary Row -->
+<div class="summary-row">
+  <div class="sum-card green">
+    <span class="sum-num">{{ present }}</span>
+    <span class="sum-label">Present</span>
+  </div>
+  <div class="sum-card red">
+    <span class="sum-num">{{ absent }}</span>
+    <span class="sum-label">Absent</span>
+  </div>
+  <div class="sum-card blue">
+    <span class="sum-num">{{ pct }}%</span>
+    <span class="sum-label">Attendance</span>
+  </div>
+  <div class="sum-card purple">
+    <span class="sum-num">{{ records|length }}</span>
+    <span class="sum-label">Total Students</span>
+  </div>
+</div>
+
+<!-- Attendance Table -->
+<div class="card" style="padding:0;overflow:hidden">
+  <div class="card-header" style="padding:20px 24px">
+    <h2>Attendance Record</h2>
+    <p class="hint" style="margin:0">Click <strong>Toggle</strong> to manually correct any entry</p>
+  </div>
+
+  {% if records %}
+  <table class="att-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Photo</th>
+        <th>Roll Number</th>
+        <th>Name</th>
+        <th>Status</th>
+        <th>Confidence</th>
+        <th>Marked At</th>
+        <th>Correct</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in records %}
+      <tr class="att-row {% if r.status == 'Present' %}row-present{% else %}row-absent{% endif %}"
+          id="row-{{ r.student_id }}">
+        <td class="td-num">{{ loop.index }}</td>
+        <td class="td-photo">
+          {% if r.photo_path %}
+            <img src="{{ url_for('static', filename=r.photo_path) }}"
+                 alt="{{ r.name }}" class="thumb" />
+          {% else %}
+            <div class="thumb-placeholder">{{ r.name[0] }}</div>
+          {% endif %}
+        </td>
+        <td><code>{{ r.roll_number }}</code></td>
+        <td><strong>{{ r.name }}</strong></td>
+        <td>
+          <span class="badge badge-{{ r.status|lower }}" id="badge-{{ r.student_id }}">
+            {{ r.status }}
+          </span>
+        </td>
+        <td>
+          {% if r.confidence and r.confidence > 0 %}
+            <div class="conf-bar">
+              <div class="conf-fill" style="width:{{ (r.confidence * 100)|round }}%"></div>
+              <span>{{ "%.1f"|format(r.confidence * 100) }}%</span>
+            </div>
+          {% else %}
+            <span style="color:var(--muted)">—</span>
+          {% endif %}
+        </td>
+        <td style="color:var(--muted); font-size:13px">
+          {{ r.marked_at[:16] if r.marked_at else '—' }}
+        </td>
+        <td>
+          <button class="btn-toggle btn btn-sm"
+                  data-session="{{ session.id }}"
+                  data-student="{{ r.student_id }}"
+                  data-current="{{ r.status }}">
+            Toggle
+          </button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state" style="padding:40px">
+    <p>No records found for this session.</p>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+document.querySelectorAll('.btn-toggle').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const sessionId  = btn.dataset.session;
+    const studentId  = btn.dataset.student;
+    const current    = btn.dataset.current;
+    const newStatus  = current === 'Present' ? 'Absent' : 'Present';
+
+    btn.disabled     = true;
+    btn.textContent  = '…';
+
+    const res = await fetch(`/session/${sessionId}/update`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ student_id: parseInt(studentId), status: newStatus })
+    });
+
+    const data = await res.json();
+    if (data.ok) {
+      btn.dataset.current       = newStatus;
+      btn.disabled              = false;
+      btn.textContent           = 'Toggle';
+
+      const row   = document.getElementById(`row-${studentId}`);
+      const badge = document.getElementById(`badge-${studentId}`);
+
+      row.className   = `att-row ${newStatus === 'Present' ? 'row-present' : 'row-absent'}`;
+      badge.className = `badge badge-${newStatus.toLowerCase()}`;
+      badge.textContent = newStatus;
+
+      // Update summary counts
+      const presentCell = document.querySelector('.sum-card.green .sum-num');
+      const absentCell  = document.querySelector('.sum-card.red  .sum-num');
+      const pctCell     = document.querySelector('.sum-card.blue  .sum-num');
+      const total       = parseInt(document.querySelector('.sum-card.purple .sum-num').textContent);
+      let p = parseInt(presentCell.textContent);
+      p = newStatus === 'Present' ? p + 1 : p - 1;
+      presentCell.textContent = p;
+      absentCell.textContent  = total - p;
+      pctCell.textContent     = Math.round(p / total * 100) + '%';
+    } else {
+      btn.disabled    = false;
+      btn.textContent = 'Toggle';
+      alert('Update failed. Please try again.');
+    }
+  });
+});
+</script>
+{% endblock %}
